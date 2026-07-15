@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import Modal from '../ui/Modal'
 import Input from '../ui/Input'
 import Button from '../ui/Button'
@@ -7,19 +8,30 @@ const emptyForm = { name: '', email: '', company: '' }
 
 function NewClientModal({ open, onClose, onSave }) {
   const [form, setForm] = useState(emptyForm)
+  const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave?.(form)
-    setForm(emptyForm)
+    setSubmitting(true)
+    try {
+      const result = await onSave?.(form)
+      toast.success(result?.message || 'Cliente creado con éxito')
+      setForm(emptyForm)
+      onClose?.()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleClose = () => {
+    if (submitting) return
     setForm(emptyForm)
     onClose?.()
   }
@@ -62,10 +74,17 @@ function NewClientModal({ open, onClose, onSave }) {
         />
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={submitting}
+          >
             Cancelar
           </Button>
-          <Button type="submit">Guardar</Button>
+          <Button type="submit" loading={submitting}>
+            {submitting ? 'Guardando...' : 'Guardar'}
+          </Button>
         </div>
       </form>
     </Modal>

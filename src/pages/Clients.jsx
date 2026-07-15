@@ -1,16 +1,35 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Users, Plus } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import SearchInput from '../components/ui/SearchInput'
 import ClientsTable from '../components/clients/ClientsTable'
 import NewClientModal from '../components/clients/NewClientModal'
-import { initialClients } from '../data/clients'
+import { getClientes, createCliente } from '../services/clientServices'
 
 function Clients() {
-  const [clients, setClients] = useState(initialClients)
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+
+  const loadClients = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await getClientes()
+      setClients(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadClients()
+  }, [loadClients])
 
   const filteredClients = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -22,17 +41,10 @@ function Clients() {
     )
   }, [clients, search])
 
-  const handleSave = (form) => {
-    const nextId = `C-${String(clients.length + 1).padStart(3, '0')}`
-    const newClient = {
-      id: nextId,
-      name: form.name,
-      email: form.email,
-      company: form.company,
-      createdAt: new Date().toISOString().slice(0, 10),
-    }
-    setClients((prev) => [...prev, newClient])
-    setModalOpen(false)
+  const handleSave = async (form) => {
+    const result = await createCliente(form)
+    await loadClients()
+    return result
   }
 
   return (
@@ -62,7 +74,13 @@ function Clients() {
           </span>
         </div>
 
-        <ClientsTable clients={filteredClients} />
+        {loading ? (
+          <p className="px-4 py-8 text-center text-sm text-slate-400">Cargando clientes...</p>
+        ) : error ? (
+          <p className="px-4 py-8 text-center text-sm text-red-400">{error}</p>
+        ) : (
+          <ClientsTable clients={filteredClients} />
+        )}
       </div>
 
       <NewClientModal
