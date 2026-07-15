@@ -1,28 +1,64 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import Modal from '../ui/Modal'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
 import Textarea from '../ui/Textarea'
 import Button from '../ui/Button'
-import { initialClients } from '../../data/clients'
+import { getClientes } from '../../services/clientServices'
 
 const emptyForm = { clientId: '', title: '', description: '' }
 
 function NewTicketModal({ open, onClose, onSave }) {
   const [form, setForm] = useState(emptyForm)
+  const [clients, setClients] = useState([])
+  const [loadingClients, setLoadingClients] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    let active = true
+
+    const loadClients = async () => {
+      setLoadingClients(true)
+      try {
+        const data = await getClientes()
+        if (active) setClients(data)
+      } catch (err) {
+        if (active) toast.error(err.message)
+      } finally {
+        if (active) setLoadingClients(false)
+      }
+    }
+
+    loadClients()
+    return () => {
+      active = false
+    }
+  }, [open])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave?.(form)
-    setForm(emptyForm)
+    setSubmitting(true)
+    try {
+      const result = await onSave?.(form)
+      toast.success(result?.message || 'Ticket creado con éxito')
+      setForm(emptyForm)
+      onClose?.()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleClose = () => {
+    if (submitting) return
     setForm(emptyForm)
     onClose?.()
   }
@@ -41,12 +77,13 @@ function NewTicketModal({ open, onClose, onSave }) {
           label="Cliente"
           value={form.clientId}
           onChange={handleChange}
+          disabled={loadingClients}
           required
         >
           <option value="" disabled>
-            Selecciona un cliente
+            {loadingClients ? 'Cargando clientes...' : 'Selecciona un cliente'}
           </option>
-          {initialClients.map((c) => (
+          {clients.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name} · {c.company}
             </option>
@@ -73,10 +110,17 @@ function NewTicketModal({ open, onClose, onSave }) {
         />
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={submitting}
+          >
             Cancelar
           </Button>
-          <Button type="submit">Crear ticket</Button>
+          <Button type="submit" loading={submitting}>
+            {submitting ? 'Creando...' : 'Crear ticket'}
+          </Button>
         </div>
       </form>
     </Modal>

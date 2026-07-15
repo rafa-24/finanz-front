@@ -1,7 +1,7 @@
 import { Building2, Calendar } from 'lucide-react'
 import Badge from '../ui/Badge'
 import Select from '../ui/Select'
-import { STATUSES, getStatus } from '../../data/tickets'
+import { STATUSES, getStatus } from '../../constants/ticketStatuses'
 
 function TicketCard({ ticket, onChangeStatus }) {
   const status = getStatus(ticket.status)
@@ -9,7 +9,7 @@ function TicketCard({ ticket, onChangeStatus }) {
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <span className="font-mono text-xs text-slate-500">{ticket.id}</span>
+        <span className="font-mono text-xs text-slate-500">T-{ticket.id}</span>
         <Badge className={status.badge}>{status.label}</Badge>
       </div>
 

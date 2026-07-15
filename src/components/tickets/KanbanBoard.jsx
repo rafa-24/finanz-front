@@ -1,5 +1,5 @@
 import KanbanColumn from './KanbanColumn'
-import { STATUSES } from '../../data/tickets'
+import { STATUSES } from '../../constants/ticketStatuses'
 
 function KanbanBoard({ tickets, onChangeStatus }) {
   return (

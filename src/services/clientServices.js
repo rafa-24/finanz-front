@@ -18,6 +18,16 @@ export const getClientes = async () => {
   }
 }
 
+export const getClienteById = async (id) => {
+  try {
+    const { data } = await apiClient.get(`/clientes/${id}`)
+    return mapCliente(data)
+  } catch (error) {
+    console.error('Error al obtener el cliente:', error)
+    throw new Error('No se pudo obtener la información del cliente.')
+  }
+}
+
 export const createCliente = async ({ name, email, company }) => {
   try {
     const payload = { nombre: name, correo: email, empresa: company }
