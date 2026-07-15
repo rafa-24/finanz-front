@@ -40,8 +40,37 @@ function Tickets() {
   }, [])
 
   useEffect(() => {
-    loadTickets()
-  }, [loadTickets])
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const [ticketsData, clientsData] = await Promise.all([
+          getTickets(),
+          getClientes(),
+        ])
+        if (cancelled) return
+
+        const clientsById = new Map(clientsData.map((c) => [c.id, c]))
+        const enriched = ticketsData.map((t) => {
+          const client = clientsById.get(t.clientId)
+          return {
+            ...t,
+            client: client?.name ?? 'Sin cliente',
+            company: client?.company ?? '',
+          }
+        })
+        setTickets(enriched)
+      } catch (err) {
+        if (!cancelled) setError(err.message)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleChangeStatus = async (id, status) => {
     const previous = tickets

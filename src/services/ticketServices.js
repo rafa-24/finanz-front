@@ -16,7 +16,9 @@ export const getTickets = async () => {
     return Array.isArray(data) ? data.map(mapTicket) : []
   } catch (error) {
     console.error('Error al cargar los tickets:', error)
-    throw new Error('No se pudieron cargar los tickets. Verifica el servidor.')
+    throw new Error('No se pudieron cargar los tickets. Verifica el servidor.', {
+      cause: error,
+    })
   }
 }
 
@@ -34,7 +36,7 @@ export const createTicket = async ({ clientId, title, description }) => {
     const message =
       error.response?.data?.detail ||
       'No se pudo crear el ticket. Inténtalo de nuevo.'
-    throw new Error(message)
+    throw new Error(message, { cause: error })
   }
 }
 
@@ -48,6 +50,6 @@ export const updateTicketEstado = async (ticketId, statusId) => {
     const message =
       error.response?.data?.detail ||
       'No se pudo actualizar el estado del ticket.'
-    throw new Error(message)
+    throw new Error(message, { cause: error })
   }
 }

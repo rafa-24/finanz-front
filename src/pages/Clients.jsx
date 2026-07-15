@@ -28,8 +28,23 @@ function Clients() {
   }, [])
 
   useEffect(() => {
-    loadClients()
-  }, [loadClients])
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getClientes()
+        if (!cancelled) setClients(data)
+      } catch (err) {
+        if (!cancelled) setError(err.message)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filteredClients = useMemo(() => {
     const term = search.trim().toLowerCase()

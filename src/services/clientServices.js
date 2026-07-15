@@ -14,7 +14,9 @@ export const getClientes = async () => {
     return Array.isArray(data) ? data.map(mapCliente) : []
   } catch (error) {
     console.error('Error al cargar los clientes:', error)
-    throw new Error('No se pudieron cargar los clientes. Verifica el servidor.')
+    throw new Error('No se pudieron cargar los clientes. Verifica el servidor.', {
+      cause: error,
+    })
   }
 }
 
@@ -24,7 +26,7 @@ export const getClienteById = async (id) => {
     return mapCliente(data)
   } catch (error) {
     console.error('Error al obtener el cliente:', error)
-    throw new Error('No se pudo obtener la información del cliente.')
+    throw new Error('No se pudo obtener la información del cliente.', { cause: error })
   }
 }
 
@@ -38,6 +40,6 @@ export const createCliente = async ({ name, email, company }) => {
     const message =
       error.response?.data?.detail ||
       'No se pudo crear el cliente. Inténtalo de nuevo.'
-    throw new Error(message)
+    throw new Error(message, { cause: error })
   }
 }

@@ -80,6 +80,31 @@ npm run preview
 npm run lint
 ```
 
+### Pruebas automatizadas
+
+```bash
+npm run test
+```
+
+Para ejecutar las pruebas en modo watch durante el desarrollo:
+
+```bash
+npm run test:watch
+```
+
+## CI/CD (GitHub Actions)
+
+El proyecto incluye un pipeline básico en `.github/workflows/ci.yml` que se ejecuta automáticamente en cada **push** y **pull request** hacia `main` o `master`.
+
+El pipeline realiza los siguientes pasos:
+
+1. **Instalación de dependencias** (`npm ci`)
+2. **Ejecución del linter** (`npm run lint`)
+3. **Ejecución de pruebas automatizadas** (`npm run test`)
+4. **Compilación del proyecto** (`npm run build`) — paso adicional para verificar que el build no falle
+
+No incluye despliegue automático.
+
 ## Funcionalidades
 
 - **Clientes** (`/clients`)
@@ -102,7 +127,7 @@ La app espera un backend con los siguientes endpoints (base: `VITE_API_URL`):
 | POST   | `/clientes`             | Crear un cliente                     |
 | GET    | `/tickets`               | Lista de tickets                     |
 | POST   | `/tickets`               | Crear un ticket                      |
-| PATCH  | `/{ticket_id}/estado`    | Actualizar el estado de un ticket    |
+| PATCH  | `/tickets/{ticket_id}/estado` | Actualizar el estado de un ticket |
 
 > Si tu backend corre en un host o puerto distinto, solo actualiza `VITE_API_URL` en el `.env`.
 >
